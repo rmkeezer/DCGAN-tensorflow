@@ -6,9 +6,26 @@ from glob import glob
 import tensorflow as tf
 import numpy as np
 from six.moves import xrange
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 
 from ops import *
 from utils import *
+
+def plot(samples):
+    fig = plt.figure(figsize=(2, 2))
+    gs = gridspec.GridSpec(2, 2)
+    gs.update(wspace=0.05, hspace=0.05)
+
+    for i, sample in enumerate(samples):
+        ax = plt.subplot(gs[i])
+        plt.axis('off')
+        ax.set_xticklabels([])
+        ax.set_yticklabels([])
+        ax.set_aspect('equal')
+        plt.imshow(sample.reshape(128, 854), cmap='Greys_r')
+
+    return fig
 
 def conv_out_size_same(size, stride):
   return int(math.ceil(float(size) / float(stride)))
@@ -76,9 +93,13 @@ class DCGAN(object):
       self.c_dim = self.data_X[0].shape[-1]
     else:
       self.data = glob(os.path.join(self.data_dir, self.dataset_name, self.input_fname_pattern))
-      imreadImg = imread(self.data[0])
+      #imreadImg = imread(self.data[0])
+      imreadImg = np.load(self.data[0])[0]
+      imreadImg = imreadImg.T
+      print(imreadImg.shape)
       if len(imreadImg.shape) >= 3: #check if image is a non-grayscale image by checking channel number
-        self.c_dim = imread(self.data[0]).shape[-1]
+        #self.c_dim = imread(self.data[0]).shape[-1]
+        self.c_dim = np.load(self.data[0]).shape[-1]
       else:
         self.c_dim = 1
 
@@ -175,7 +196,7 @@ class DCGAN(object):
                     crop=self.crop,
                     grayscale=self.grayscale) for sample_file in sample_files]
       if (self.grayscale):
-        sample_inputs = np.array(sample).astype(np.float32)[:, :, :, None]
+        sample_inputs = np.array(sample).astype(np.float32)
       else:
         sample_inputs = np.array(sample).astype(np.float32)
   
@@ -211,7 +232,13 @@ class DCGAN(object):
                         crop=self.crop,
                         grayscale=self.grayscale) for batch_file in batch_files]
           if self.grayscale:
-            batch_images = np.array(batch).astype(np.float32)[:, :, :, None]
+            try:
+              batch_images = np.array(batch).astype(np.float32)
+            except Exception as e:
+              print(e)
+              print("BAD")
+              print(batch_files)
+              print(idx)
           else:
             batch_images = np.array(batch).astype(np.float32)
 
@@ -300,13 +327,17 @@ class DCGAN(object):
                     self.inputs: sample_inputs,
                 },
               )
-              save_images(samples, image_manifold_size(samples.shape[0]),
-                    './{}/train_{:02d}_{:04d}.png'.format(config.sample_dir, epoch, idx))
-              print("[Sample] d_loss: %.8f, g_loss: %.8f" % (d_loss, g_loss)) 
+              fig = plot(samples)
+              plt.savefig('./samples/{}_{}.png'
+                          .format(epoch, str(idx).zfill(3)), bbox_inches='tight', dpi=1000)
+              plt.close(fig)
+              # save_images(samples, image_manifold_size(samples.shape[0]),
+              #       './{}/train_{:02d}_{:04d}.png'.format(config.sample_dir, epoch, idx))
+              # print("[Sample] d_loss: %.8f, g_loss: %.8f" % (d_loss, g_loss)) 
             except:
               print("one pic error!...")
 
-        if np.mod(counter, 500) == 2:
+        if np.mod(counter, 100) == 2:
           self.save(config.checkpoint_dir, counter)
 
   def discriminator(self, image, y=None, reuse=False):

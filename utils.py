@@ -25,7 +25,7 @@ def show_all_variables():
 def get_image(image_path, input_height, input_width,
               resize_height=64, resize_width=64,
               crop=True, grayscale=False):
-  image = imread(image_path, grayscale)
+  image = imread(image_path, grayscale).T
   return transform(image, input_height, input_width,
                    resize_height, resize_width, crop)
 
@@ -34,9 +34,9 @@ def save_images(images, size, image_path):
 
 def imread(path, grayscale = False):
   if (grayscale):
-    return scipy.misc.imread(path, flatten = True).astype(np.float)
+    return np.load(path).astype(np.float)
   else:
-    return scipy.misc.imread(path).astype(np.float)
+    return np.load(path).astype(np.float)
 
 def merge_images(images, size):
   return inverse_transform(images)
@@ -83,7 +83,8 @@ def transform(image, input_height, input_width,
       image, input_height, input_width, 
       resize_height, resize_width)
   else:
-    cropped_image = scipy.misc.imresize(image, [resize_height, resize_width])
+    cropped_image = image
+    #cropped_image = scipy.misc.imresize(image, [resize_height, resize_width])
   return np.array(cropped_image)/127.5 - 1.
 
 def inverse_transform(images):
@@ -191,8 +192,10 @@ def visualize(sess, dcgan, config, option):
         samples = sess.run(dcgan.sampler, feed_dict={dcgan.z: z_sample, dcgan.y: y_one_hot})
       else:
         samples = sess.run(dcgan.sampler, feed_dict={dcgan.z: z_sample})
-
-      save_images(samples, [image_frame_dim, image_frame_dim], './samples/test_arange_%s.png' % (idx))
+      np.save('moretests/test.npy', samples[0])
+      for i in range(len(samples)):
+        np.save('moretests/test' + str(i) + '.npy', samples[i])
+      #save_images(samples, [image_frame_dim, image_frame_dim], './samples/test_arange_%s.png' % (idx))
   elif option == 2:
     values = np.arange(0, 1, 1./config.batch_size)
     for idx in [random.randint(0, dcgan.z_dim - 1) for _ in xrange(dcgan.z_dim)]:
