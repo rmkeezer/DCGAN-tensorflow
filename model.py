@@ -281,10 +281,14 @@ class DCGAN(object):
               self.y: batch_labels
           })
         else:
-          # Update D network
-          _, summary_str = self.sess.run([d_optim, self.d_sum],
-            feed_dict={ self.inputs: batch_images, self.z: batch_z })
-          self.writer.add_summary(summary_str, counter)
+          try:
+            # Update D network
+            _, summary_str = self.sess.run([d_optim, self.d_sum],
+              feed_dict={ self.inputs: batch_images, self.z: batch_z })
+            self.writer.add_summary(summary_str, counter)
+          except Exception as e:
+            print(e)
+            continue
 
           # Update G network
           _, summary_str = self.sess.run([g_optim, self.g_sum],
