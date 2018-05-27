@@ -26,17 +26,17 @@ def get_image(image_path, input_height, input_width,
               resize_height=64, resize_width=64,
               crop=True, grayscale=False):
   image = imread(image_path, grayscale).T
-  return transform(image, input_height, input_width,
-                   resize_height, resize_width, crop)
+  return image#transform(image, input_height, input_width,
+                   #resize_height, resize_width, crop)
 
 def save_images(images, size, image_path):
   return imsave(inverse_transform(images), size, image_path)
 
 def imread(path, grayscale = False):
   if (grayscale):
-    return np.load(path).astype(np.float)
+    return np.load(path).reshape((1,-1,513))
   else:
-    return np.load(path).astype(np.float)
+    return np.load(path).reshape((1,-1,513))
 
 def merge_images(images, size):
   return inverse_transform(images)

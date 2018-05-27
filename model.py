@@ -23,7 +23,7 @@ def plot(samples):
         ax.set_xticklabels([])
         ax.set_yticklabels([])
         ax.set_aspect('equal')
-        plt.imshow(sample.reshape(128, 854), cmap='Greys_r')
+        plt.imshow(sample.reshape(-1, 513), cmap='Greys_r')
 
     return fig
 
@@ -331,6 +331,8 @@ class DCGAN(object):
               plt.savefig('./samples/{}_{}.png'
                           .format(epoch, str(idx).zfill(3)), bbox_inches='tight', dpi=1000)
               plt.close(fig)
+              np.save('./samples/{}_{}.npy'
+                          .format(epoch, str(idx).zfill(3)), samples[0])
               # save_images(samples, image_manifold_size(samples.shape[0]),
               #       './{}/train_{:02d}_{:04d}.png'.format(config.sample_dir, epoch, idx))
               # print("[Sample] d_loss: %.8f, g_loss: %.8f" % (d_loss, g_loss)) 
