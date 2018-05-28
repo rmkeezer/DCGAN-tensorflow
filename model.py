@@ -331,12 +331,18 @@ class DCGAN(object):
                     self.inputs: sample_inputs,
                 },
               )
+              fig = plot(batch_images)
+              plt.savefig('./samples/IN{}_{}.png'
+                          .format(epoch, str(idx).zfill(3)), bbox_inches='tight', dpi=1000)
+              plt.close(fig)
               fig = plot(samples)
               plt.savefig('./samples/{}_{}.png'
                           .format(epoch, str(idx).zfill(3)), bbox_inches='tight', dpi=1000)
               plt.close(fig)
               np.save('./samples/{}_{}.npy'
-                          .format(epoch, str(idx).zfill(3)), samples[0])
+                          .format(epoch, str(idx).zfill(3)), samples[0].T)
+              np.save('./samples/IN{}_{}.npy'
+                          .format(epoch, str(idx).zfill(3)), batch_images[0].T)
               # save_images(samples, image_manifold_size(samples.shape[0]),
               #       './{}/train_{:02d}_{:04d}.png'.format(config.sample_dir, epoch, idx))
               # print("[Sample] d_loss: %.8f, g_loss: %.8f" % (d_loss, g_loss)) 
